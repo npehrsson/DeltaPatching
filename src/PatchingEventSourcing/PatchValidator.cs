@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using PatchingEventSourcing.ValueTypes;
 
 namespace PatchingEventSourcing {
@@ -17,14 +16,14 @@ namespace PatchingEventSourcing {
         }
 
         public bool Validate<T>(Patch patch) {
-            var tree = _typeTreeCache.GetOrCreate<T>();
-            IList<PropertyInfo> propertyChain;
+            var typeInfo = _typeTreeCache.GetOrCreate<T>();
+            PropertyAccessor propertyChain;
 
-            if (!tree.TryGetValue(patch.Path, out propertyChain)) {
+            if (!typeInfo.Accessors.TryGetValue(patch.Path, out propertyChain)) {
                 return false;
             }
 
-            return ValidateDataType(propertyChain.Last().PropertyType, patch.Value);
+            return ValidateDataType(propertyChain.PropertyChain.Last().PropertyType, patch.Value);
         }
 
         private bool ValidateDataType(Type declaringType, string value) {
